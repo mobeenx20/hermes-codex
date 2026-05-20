@@ -101,20 +101,10 @@ def _extract_file_path(tool_name: str, args: Optional[Dict[str, Any]]) -> Option
     if not args or not isinstance(args, dict):
         return None
 
-    path_arg = args.get("path")
-    if isinstance(path_arg, str) and path_arg:
-        return path_arg
-
-    if tool_name == "terminal":
-        cmd = args.get("command", "")
-        if isinstance(cmd, str) and "/" in cmd:
-            import shlex
-            try:
-                for token in shlex.split(cmd):
-                    if "/" in token and not token.startswith("-"):
-                        return token
-            except ValueError:
-                pass
+    if tool_name in ("read_file", "patch", "search_files"):
+        path_arg = args.get("path")
+        if isinstance(path_arg, str) and path_arg:
+            return path_arg
 
     return None
 

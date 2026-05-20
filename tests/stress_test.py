@@ -24,7 +24,7 @@ FAILED = 0
 TOTAL = 0
 
 
-def test(name, condition, detail=""):
+def _run_test(name, condition, detail=""):
     global PASSED, FAILED, TOTAL
     TOTAL += 1
     if condition:
@@ -68,26 +68,26 @@ print("=" * 60)
 # -- Section A: Path Matcher --
 print("\n[A] Path Matcher Edge Cases")
 
-test("A1: *.py matches root", _match_glob_pattern("main.py", "*.py"))
-test("A1b: *.py does NOT match nested", not _match_glob_pattern("src/main.py", "*.py"))
-test("A2: **/*.py deep nested", _match_glob_pattern("a/b/c/d/main.py", "**/*.py"))
-test("A2b: **/*.py at root", _match_glob_pattern("main.py", "**/*.py"))
-test("A3: src/**/test.py deep", _match_glob_pattern("src/deeply/nested/test.py", "src/**/test.py"))
-test("A3b: src/**/test.py zero segments", _match_glob_pattern("src/test.py", "src/**/test.py"))
-test("A4: ?.ts single char", _match_glob_pattern("a.ts", "?.ts"))
-test("A4b: ?.py no match multi", not _match_glob_pattern("app.py", "?.py"))
+_run_test("A1: *.py matches root", _match_glob_pattern("main.py", "*.py"))
+_run_test("A1b: *.py does NOT match nested", not _match_glob_pattern("src/main.py", "*.py"))
+_run_test("A2: **/*.py deep nested", _match_glob_pattern("a/b/c/d/main.py", "**/*.py"))
+_run_test("A2b: **/*.py at root", _match_glob_pattern("main.py", "**/*.py"))
+_run_test("A3: src/**/test.py deep", _match_glob_pattern("src/deeply/nested/test.py", "src/**/test.py"))
+_run_test("A3b: src/**/test.py zero segments", _match_glob_pattern("src/test.py", "src/**/test.py"))
+_run_test("A4: ?.ts single char", _match_glob_pattern("a.ts", "?.ts"))
+_run_test("A4b: ?.py no match multi", not _match_glob_pattern("app.py", "?.py"))
 
 expanded = expand_braces("src/*.{ts,tsx,js,jsx}")
-test("A5: brace expansion returns 4", len(expanded) == 4, f"got {len(expanded)}: {expanded}")
-test("A5b: braces match src/app.tsx",
+_run_test("A5: brace expansion returns 4", len(expanded) == 4, f"got {len(expanded)}: {expanded}")
+_run_test("A5b: braces match src/app.tsx",
      matches_paths_frontmatter("src/app.tsx", ["src/*.{ts,tsx,js,jsx}"]))
 
-test("A6: [abc].ts matches a.ts", _match_glob_pattern("a.ts", "[abc].ts"))
-test("A6b: [abc].ts no match d.ts", not _match_glob_pattern("d.ts", "[abc].ts"))
-test("A7: empty matches empty", _match_glob_pattern("", ""))
-test("A7b: empty no match real", not _match_glob_pattern("file.py", ""))
-test("A8: Windows backslash", _match_glob_pattern("src\\components\\button.ts", "src/**/*.ts"))
-test("A8b: file with spaces", _match_glob_pattern("my file.py", "*.py"))
+_run_test("A6: [abc].ts matches a.ts", _match_glob_pattern("a.ts", "[abc].ts"))
+_run_test("A6b: [abc].ts no match d.ts", not _match_glob_pattern("d.ts", "[abc].ts"))
+_run_test("A7: empty matches empty", _match_glob_pattern("", ""))
+_run_test("A7b: empty no match real", not _match_glob_pattern("file.py", ""))
+_run_test("A8: Windows backslash", _match_glob_pattern("src\\components\\button.ts", "src/**/*.ts"))
+_run_test("A8b: file with spaces", _match_glob_pattern("my file.py", "*.py"))
 
 # -- Section B: Rules Loader --
 print("\n[B] Rules Loader")
@@ -96,12 +96,12 @@ with tempfile.TemporaryDirectory() as tmp:
     # B1: Empty directory
     p = Path(tmp) / "empty_proj" / ".hermes" / "rules"
     p.mkdir(parents=True)
-    test("B1: Empty rules dir",
+    _run_test("B1: Empty rules dir",
          _load_rules_from_dir(p, Path(tmp), is_global=False,
                               scan_fn=mock_scan_fn, parse_fn=mock_parse_fn) == "")
 
     # B2: Non-existent directory
-    test("B2: Non-existent dir",
+    _run_test("B2: Non-existent dir",
          _load_rules_from_dir(Path("/nonexistent/rules"), Path(tmp), is_global=False,
                               scan_fn=mock_scan_fn, parse_fn=mock_parse_fn) == "")
 
@@ -111,7 +111,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (p / "测试.md").write_text("# Unicode Rule\n- 中文规则\n")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B3: Unicode file loaded", r and "Unicode" in r, f"got: {repr(r[:100]) if r else 'empty'}")
+    _run_test("B3: Unicode file loaded", r and "Unicode" in r, f"got: {repr(r[:100]) if r else 'empty'}")
 
     # B4: Malformed YAML
     p = Path(tmp) / "bad_proj" / ".hermes" / "rules"
@@ -119,13 +119,13 @@ with tempfile.TemporaryDirectory() as tmp:
     (p / "bad.md").write_text("---\npaths:\n  - this is [broken\n---\n# Content\n")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B4: Malformed YAML no crash", r is not None, f"got: {repr(r[:100]) if r else 'empty'}")
+    _run_test("B4: Malformed YAML no crash", r is not None, f"got: {repr(r[:100]) if r else 'empty'}")
 
     # B5: Empty file
     p = Path(tmp) / "empty_file_proj" / ".hermes" / "rules"
     p.mkdir(parents=True)
     (p / "empty.md").write_text("")
-    test("B5: Empty .md skipped",
+    _run_test("B5: Empty .md skipped",
          _load_rules_from_dir(p, Path(tmp), is_global=False,
                               scan_fn=mock_scan_fn, parse_fn=mock_parse_fn) == "")
 
@@ -133,7 +133,7 @@ with tempfile.TemporaryDirectory() as tmp:
     p = Path(tmp) / "ws_proj" / ".hermes" / "rules"
     p.mkdir(parents=True)
     (p / "ws.md").write_text("   \n\n   \n")
-    test("B6: Whitespace skipped",
+    _run_test("B6: Whitespace skipped",
          _load_rules_from_dir(p, Path(tmp), is_global=False,
                               scan_fn=mock_scan_fn, parse_fn=mock_parse_fn) == "")
 
@@ -143,7 +143,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (p / "py.md").write_text("---\npaths:\n  - \"**/*.py\"\n---\n# Python\n")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B7: Path-scoped deferred", r == "", f"leaked: {repr(r[:100]) if r else ''}")
+    _run_test("B7: Path-scoped deferred", r == "", f"leaked: {repr(r[:100]) if r else ''}")
 
     # B8: Mixed always + scoped
     p = Path(tmp) / "mixed_proj" / ".hermes" / "rules"
@@ -152,8 +152,8 @@ with tempfile.TemporaryDirectory() as tmp:
     (p / "scoped.md").write_text("---\npaths:\n  - \"**/*.ts\"\n---\n# TS\n")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B8a: Always-loaded present", r and "always" in r, f"got: {repr(r[:200])}")
-    test("B8b: Path-scoped deferred", r and "scoped" not in r, f"leaked: {repr(r[:200])}")
+    _run_test("B8a: Always-loaded present", r and "always" in r, f"got: {repr(r[:200])}")
+    _run_test("B8b: Path-scoped deferred", r and "scoped" not in r, f"leaked: {repr(r[:200])}")
 
     # B9: Dashes in code block
     p = Path(tmp) / "body_proj" / ".hermes" / "rules"
@@ -161,7 +161,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (p / "code.md").write_text("# Rule\n\n```\n---\nyaml\n---\n```\n")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B9: Dashes in body = always-rule", r and "code" in r, f"got: {repr(r[:200])}")
+    _run_test("B9: Dashes in body = always-rule", r and "code" in r, f"got: {repr(r[:200])}")
 
     # B10: Deduplication
     p = Path(tmp) / "dedup_proj" / ".hermes" / "rules"
@@ -170,7 +170,7 @@ with tempfile.TemporaryDirectory() as tmp:
     r = _load_rules_from_dir(p, Path(tmp), is_global=True,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn,
                              skip_filenames={"style.md"})
-    test("B10: Deduplication skip", r == "")
+    _run_test("B10: Deduplication skip", r == "")
 
     # B11: Multiple path patterns
     p = Path(tmp) / "multi_p_proj" / ".hermes" / "rules"
@@ -180,7 +180,7 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B11: Multiple paths -> deferred", r == "")
+    _run_test("B11: Multiple paths -> deferred", r == "")
 
 # B12: Symlink
 with tempfile.TemporaryDirectory() as tmp:
@@ -193,7 +193,7 @@ with tempfile.TemporaryDirectory() as tmp:
     os.symlink(target / "shared.md", p / "link.md")
     r = _load_rules_from_dir(p, Path(tmp), is_global=False,
                              scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
-    test("B12: Symlinked rule loaded", r and "link" in r, f"got: {repr(r[:100])}")
+    _run_test("B12: Symlinked rule loaded", r and "link" in r, f"got: {repr(r[:100])}")
 
 # -- Section C: Concurrent Access --
 print("\n[C] Concurrent Access")
@@ -210,7 +210,7 @@ with tempfile.TemporaryDirectory() as tmp:
                                  scan_fn=mock_scan_fn, parse_fn=mock_parse_fn)
         except Exception as e:
             errors += 1
-    test("C1: 100 rapid calls, 0 errors", errors == 0, f"{errors} errors")
+    _run_test("C1: 100 rapid calls, 0 errors", errors == 0, f"{errors} errors")
 
 # -- Summary --
 print("\n" + "=" * 60)
