@@ -1,0 +1,7 @@
+name: hermes_codex
+version: 1.0.0
+description: "Modular rules directory system — .hermes/rules/ for project instructions with YAML path-scoping, equivalent to Claude Code's .claude/rules/"
+author: "mobeenx20"
+hooks:
+  - on_session_start
+  - post_tool_call

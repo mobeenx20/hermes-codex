@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "hermes-codex"
+version = "1.0.0"
+description = "Scoped project rules for Hermes Agent — .hermes/rules/ with YAML path-scoping"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "mobeenx20", email = "mobeenx20@users.noreply.github.com"},
+]
+keywords = ["hermes", "hermes-agent", "plugin", "rules", "development", "ai-agent"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Plugins",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-timeout",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hermes_codex*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+timeout = 30
