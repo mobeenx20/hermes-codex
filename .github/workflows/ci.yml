@@ -32,4 +32,4 @@ jobs:
 
       - name: Run stress tests
         run: |
-          python tests/test_stress.py
+          python tests/stress_test.py
