@@ -88,10 +88,10 @@ paths:
 
 ```bash
 # List all active rules
-/hermes_rules list
+/hermes_codex list
 
 # Test path matching
-/hermes_rules test src/api/handler.py
+/hermes_codex test src/api/handler.py
 ```
 
 ## Rule Resolution Order

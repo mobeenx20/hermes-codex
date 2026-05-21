@@ -233,7 +233,7 @@ def register(ctx):
     ctx.register_hook("on_session_start", _on_session_start)
     ctx.register_hook("post_tool_call", _on_post_tool_call)
     ctx.register_hook("pre_llm_call", _on_pre_llm_call)  # NEW
-    ctx.register_command("hermes_rules", ...)
+    ctx.register_command("hermes_codex", ...)
 ```
 
 ### 4. Update `_on_post_tool_call` docstring
