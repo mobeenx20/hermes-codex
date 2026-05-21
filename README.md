@@ -24,10 +24,16 @@ hermes restart
 ### Plugin install (recommended)
 
 ```bash
+# Option A: Install from GitHub (auto-enables)
+hermes plugins install mobeenx20/hermes-codex
+
+# Option B: Manual copy (work offline, no public repo needed)
 git clone https://github.com/mobeenx20/hermes-codex.git
 cp -r hermes-codex/hermes_codex ~/.hermes/hermes-agent/plugins/hermes_codex/
-hermes restart
 ```
+
+No restart needed - the plugin activates on the next Hermes session start
+via the `on_session_start` hook.
 
 > **Note:** hermes-codex requires the Hermes Agent runtime. Install inside
 > the Hermes Agent Python environment only. The plugin uses Hermes' native
