@@ -20,7 +20,7 @@ pytest tests/ -v
 pytest tests/test_path_matcher.py -v
 
 # Run stress tests
-pytest tests/test_stress.py -v --timeout=30
+python tests/stress_test.py
 ```
 
 ## Code Style

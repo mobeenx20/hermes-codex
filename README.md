@@ -16,8 +16,8 @@ hermes restart
 - **Global rules** — `~/.hermes/rules/` for conventions shared across all projects
 - **Path-scoped rules** — YAML `paths:` frontmatter activates rules only when matching files are accessed
 - **Automatic deduplication** — project rules override global rules with the same filename
-- **Zero core patches** — uses Hermes' native plugin hook system
-- **Slash commands** — `/hermes_rules list` and `/hermes_rules test <path>`
+- **Plugin hook system** — uses Hermes' native hooks, no core code modifications
+- **Slash commands** — `/hermes_codex list` and `/hermes_codex test <path>`
 
 ## Installation
 
@@ -29,7 +29,19 @@ cp -r hermes-codex/hermes_codex ~/.hermes/hermes-agent/plugins/hermes_codex/
 hermes restart
 ```
 
-### Package install
+> **Note:** hermes-codex requires the Hermes Agent runtime. Install inside
+> the Hermes Agent Python environment only. The plugin uses Hermes' native
+> hook system — no core code modifications needed.
+>
+> Rules are injected into the agent's context on every turn via the
+> `pre_llm_call` plugin hook. Always-active rules appear immediately;
+> path-scoped rules have a one-turn delay (matching file access → detected
+> in post_tool_call → injected on next turn).
+
+### Package install (advanced)
+
+> **Note:** hermes-codex requires the Hermes Agent runtime. Install inside
+> the Hermes Agent Python environment only.
 
 ```bash
 pip install hermes-codex
@@ -84,9 +96,9 @@ paths:
 
 ## Rule Resolution Order
 
-1. **Project rules** (`.hermes/rules/`) are loaded first
-2. **Global rules** (`~/.hermes/rules/`) fill in gaps — skipped if a project rule with the same filename exists
-3. **Path-scoped rules** are injected only when a matching file is accessed via `read_file`, `patch`, or `search_files`
+1. **Global rules** (`~/.hermes/rules/`) are loaded first — but skipped if a project rule with the same filename exists
+2. **Project rules** (`.hermes/rules/`) are loaded second and always included
+3. **Path-scoped rules** (any rule with `paths:` frontmatter) are deferred — injected on the next turn after a matching file is accessed via `read_file`, `patch`, or `search_files`
 
 ## Architecture
 
@@ -97,10 +109,11 @@ hermes_codex/
 └── path_matcher.py      # Glob-based path matching for paths: frontmatter
 ```
 
-The plugin registers three hooks with Hermes:
+The plugin registers four hooks with Hermes:
 - **`on_session_start`** — logs active rule sources
+- **`on_session_end`** — cleans up cached rules
 - **`post_tool_call`** — detects path-scoped rule matches on file access
-- **`/hermes_rules`** — interactive command for listing and testing rules
+- **`pre_llm_call`** — injects rules into the user message on every turn
 
 ## Requirements
 

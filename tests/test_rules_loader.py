@@ -25,7 +25,7 @@ def mock_scan_fn():
 
 @pytest.fixture
 def mock_parse_fn():
-    """Mock parse_frontmatter."""
+    """Mock parse_frontmatter with YAML list support."""
     def _parse(content):
         lines = content.split("\n")
         fm = {}
@@ -33,15 +33,25 @@ def mock_parse_fn():
             end = 1
             while end < len(lines) and lines[end].strip() != "---":
                 end += 1
+            current_key = None
             for line in lines[1:end]:
-                if ":" in line:
-                    key, val = line.split(":", 1)
+                stripped = line.strip()
+                if stripped.startswith("- "):
+                    # YAML list item — append to current key
+                    if current_key:
+                        val = stripped[2:].strip().strip('"').strip("'")
+                        if not isinstance(fm.get(current_key), list):
+                            fm[current_key] = []
+                        fm[current_key].append(val)
+                elif ":" in stripped:
+                    key, val = stripped.split(":", 1)
                     key = key.strip()
                     val = val.strip().strip('"').strip("'")
-                    if val.startswith("["):
-                        import json
-                        val = json.loads(val.replace("'", '"'))
-                    fm[key] = val
+                    current_key = key
+                    if val:
+                        fm[key] = val
+                    else:
+                        fm[key] = []  # prepare for list items
             body = "\n".join(lines[end + 1:]).strip()
         else:
             body = content

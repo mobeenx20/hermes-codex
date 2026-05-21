@@ -6,9 +6,7 @@ Tests path_matcher at scale: edge cases, large inputs, repeated calls.
 import sys
 import os
 import tempfile
-import shutil
 from pathlib import Path
-from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -46,15 +44,25 @@ def mock_parse_fn(content):
         end = 1
         while end < len(lines) and lines[end].strip() != "---":
             end += 1
+        current_key = None
         for line in lines[1:end]:
-            if ":" in line:
-                key, val = line.split(":", 1)
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                # YAML list item — append to current key
+                if current_key:
+                    val = stripped[2:].strip().strip('"').strip("'")
+                    if not isinstance(fm.get(current_key), list):
+                        fm[current_key] = []
+                    fm[current_key].append(val)
+            elif ":" in stripped:
+                key, val = stripped.split(":", 1)
                 key = key.strip()
                 val = val.strip().strip('"').strip("'")
-                if val.startswith("["):
-                    import json
-                    val = json.loads(val.replace("'", '"'))
-                fm[key] = val
+                current_key = key
+                if val:
+                    fm[key] = val
+                else:
+                    fm[key] = []  # prepare for list items
         body = "\n".join(lines[end + 1:]).strip()
     else:
         body = content

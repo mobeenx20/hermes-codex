@@ -7,7 +7,6 @@ Supports:
 - src/**/*.{ts,tsx} (brace expansion)
 """
 
-import fnmatch
 import re
 from typing import List
 

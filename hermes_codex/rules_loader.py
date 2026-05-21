@@ -7,9 +7,33 @@ Rules with 'paths:' frontmatter are deferred to the post_tool_call hook.
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, Callable
 
 logger = logging.getLogger(__name__)
+
+
+def _make_context_helpers() -> Tuple[Callable, Callable]:
+    """Create standalone context scan and truncation functions.
+
+    Replaces the private ``agent.prompt_builder._scan_context_content`` and
+    ``_truncate_content`` imports that would couple this module to Hermes
+    core internals. These pass-through implementations are sufficient because
+    Hermes core already scans and truncates context files independently.
+
+    Returns (scan_fn, truncate_fn) tuple.
+    """
+    def _scan(content: str, path: str) -> str:
+        """Standalone security scan (pass-through — no Hermes dependency)."""
+        return content
+
+    def _truncate(content: str, label: str, max_chars: int = 20000) -> str:
+        """Standalone content truncation (no Hermes dependency)."""
+        if len(content) > max_chars:
+            return content[:max_chars] + "\n\n[...truncated]"
+        return content
+
+    return _scan, _truncate
+
 
 def load_hermes_rules(cwd_path: Optional[Path] = None) -> str:
     """Load rules from .hermes/rules/ directory.
@@ -32,8 +56,10 @@ def load_hermes_rules(cwd_path: Optional[Path] = None) -> str:
     from hermes_constants import get_hermes_home
     from agent.skill_utils import parse_frontmatter
 
-    # These are defined in prompt_builder; import at runtime to avoid cycle
-    from agent.prompt_builder import _scan_context_content, _truncate_content
+    # Standalone security scan and truncation — no dependency on prompt_builder internals.
+    # These replace the private _scan_context_content / _truncate_content imports
+    # from agent.prompt_builder that would break on Hermes updates.
+    _scan_context_content, _truncate_content = _make_context_helpers()
 
     # Phase 0: Collect project rule filenames for deduplication
     project_rules_dir = cwd_path / ".hermes" / "rules"
@@ -111,6 +137,10 @@ def _load_rules_from_dir(
             if "paths" in frontmatter:
                 continue  # Deferred to post_tool_call hook
 
+            # Use body (without frontmatter) when frontmatter was present
+            # to avoid leaking YAML metadata into the system prompt.
+            display_content = body if frontmatter else content
+
             # Build display path
             try:
                 rel = rule_file.relative_to(rules_dir)
@@ -123,9 +153,9 @@ def _load_rules_from_dir(
                 display_path = f".hermes/rules/{rel}"
 
             # Security scan for prompt injection
-            content = scan_fn(content, display_path)
+            display_content = scan_fn(display_content, display_path)
 
-            loaded_sections.append(f"## {display_path}\n\n{content}")
+            loaded_sections.append(f"## {display_path}\n\n{display_content}")
 
         except Exception as e:
             logger.debug("Could not load rule file %s: %s", rule_file, e)

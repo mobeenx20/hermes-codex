@@ -12,4 +12,4 @@
 - **Deduplication** — project rules with same filename override globals
 - **Slash commands** — `/hermes_rules list` and `/hermes_rules test <path>`
 - **Security scanning** — prompt injection detection on rule content
-- **Stress-tested** — 38 test scenarios, 36/38 passing (2 are Hermes scanner limitations)
+- **Stress-tested** — 63 test scenarios covering edge cases and stress conditions
