@@ -1,8 +1,8 @@
 # Hermes Codex
 
-**Scoped project rules for Hermes Agent.**
+**Scoped project rules for Hermes Agent - a `.hermes/rules/` system for per-project coding conventions.**
 
-Hermes Codex brings Claude Code-style `.claude/rules/` to Hermes Agent - a modular rules directory system that lets you define per-project development conventions with YAML path-scoping.
+Hermes Codex brings Claude Code-style `.claude/rules/` to Hermes Agent - a modular rules directory that lets you define per-project development rules, coding conventions, and path-scoped guidelines for your AI coding agent. Define global and project-level Hermes rules with YAML path-scoping and have them injected into the agent's context automatically.
 
 ```bash
 # Copy plugin to Hermes plugins directory
