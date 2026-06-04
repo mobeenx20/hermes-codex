@@ -27,8 +27,26 @@ git clone https://github.com/mobeenx20/hermes-codex.git
 cp -r hermes-codex/hermes_codex ~/.hermes/hermes-agent/plugins/hermes_codex/
 ```
 
-No restart needed - the plugin activates on the next Hermes session start
-via the `on_session_start` hook.
+### Enable the plugin
+
+Add `hermes_codex` to your Hermes config at `~/.hermes/config.yaml`:
+
+```yaml
+plugins:
+  - hermes_codex
+```
+
+The plugin activates on the next Hermes session start via the `on_session_start` hook.
+
+### Install the companion skill (optional)
+
+The `hermes-codex-rules-scaffold` skill walks you through creating `.hermes/rules/` for any project interactively:
+
+```bash
+cp -r hermes-codex/skills/codex-rules-scaffold ~/.hermes/skills/devops/hermes-codex-rules-scaffold
+```
+
+Then say "scaffold rules for this project" in any Hermes session to invoke it.
 
 > **Note:** hermes-codex requires the Hermes Agent runtime. Install inside
 > the Hermes Agent Python environment only. The plugin uses Hermes' native
@@ -38,18 +56,6 @@ via the `on_session_start` hook.
 > `pre_llm_call` plugin hook. Always-active rules appear immediately;
 > path-scoped rules have a one-turn delay (matching file access → detected
 > in post_tool_call → injected on next turn).
-
-### Package install (advanced)
-
-> **Note:** hermes-codex requires the Hermes Agent runtime. Install inside
-> the Hermes Agent Python environment only.
-
-```bash
-pip install hermes-codex
-# Then add to ~/.hermes/config.yaml:
-# plugins:
-#   - hermes_codex
-```
 
 ## Quick Start
 
